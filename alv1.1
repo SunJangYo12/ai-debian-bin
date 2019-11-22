@@ -847,6 +847,8 @@ elif [ "$com" = "wifi_hack" ]; then
 	wifi_hack
 elif [ "$com" = "install" ]; then
 	install_data
+elif [ "$com" = "screen" ]; then
+	scrot ~/screen.jpeg
 else
 	echo
 	echo_green_title "    DAFTAR PERINTAH"
@@ -857,6 +859,7 @@ else
 	echo_yellow "cerah: mengatur Kecerahan layar"
 	echo_yellow "edit: membuka text editor"
 	echo_yellow "3d: membuka blender 3d"
+	echo_yellow "screen: screenshot window"
 	echo_yellow "rec: merekam internal audio"
 	echo_yellow "wifi_hack: mengetes wifi"
 	echo_yellow "install: jika ini program diinstall dikomputer baru jalankan perintah ini"
