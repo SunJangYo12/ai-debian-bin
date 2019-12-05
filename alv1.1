@@ -600,6 +600,19 @@ function install_data() {
 			chmod 777 "/usr/bin"
 		fi
 	fi
+
+	echo_red "---server---"
+	echo_blue "apt install libapache2-mod-php php-mysql php-common"
+	echo_blue "service apache2 start"
+	echo_blue "apt install mysql-server"
+	echo_blue "mysql --version"
+	echo_blue "service mysql start"
+	echo_blue "apt install phpmyadmin"
+	echo
+	echo_red "---apk build---"
+	echo_blue "apt install openjdk-8-jdk"
+	echo_blue "apt install openjdk-8-jre"
+
 }
 
 function wifi() {
