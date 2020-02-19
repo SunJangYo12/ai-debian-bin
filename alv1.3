@@ -208,7 +208,10 @@ function apk_build()
 				echo_yellow "###################### `date` #######################"
 				echo_green_title "Compiling..."
 
-				javac -d obj -classpath src -bootclasspath $LIBPROJ/android.jar src/$apaket/*.java &
+				#this javac 8
+				#javac -d obj -classpath src -bootclasspath $LIBPROJ/android.jar src/$apaket/*.java &
+				
+				javac -d obj -source 1.7 -target 1.7 -classpath src -bootclasspath $LIBPROJ/android.jar src/$apaket/*.java &
 				spinner
 				
 				echo_red "Finish compiling!"
