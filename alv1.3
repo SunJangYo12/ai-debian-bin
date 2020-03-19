@@ -603,7 +603,8 @@ function wifi()
 	elif [ "$wi" = "c" ]; then
 		echo
 		echo_green_title "****** List now *****"
-		sudo arp -a
+		#sudo arp -a
+		sudo nmap -sS 10.42.0.1/24
 		echo
 		echo "***** Name ******"
 		cat "/var/lib/misc/dnsmasq.leases"
