@@ -887,7 +887,6 @@ function tes() {
 }
 
 
-
 if [ "$com" = "apkkey" ]; then
 	apk_index
 elif [ "$com" = "git" ]; then
@@ -913,6 +912,12 @@ elif [ "$com" = "install" ]; then
 	install_data
 elif [ "$com" = "screen" ]; then
 	scrot ~/screen.jpeg
+elif [[ "$com" = "snap" ]]; then
+	read -p "service disable? y/n: " snapp
+	if [ "$snapp" = "y" ]; then
+		sudo systemctl stop snapd.service
+		sudo systemctl disable snapd.service
+	fi
 elif [ "$com" = "seven-square" ]; then
 	cd $allib/build-tools
 	./seven-square
@@ -925,6 +930,7 @@ else
 	echo
 	echo_yellow "apkkey: manajer aplikasi android"
 	echo_yellow "git: manajer git"
+	echo_yellow "snap: manajer snap installer"
 	echo_yellow "wifi: membuat wifi hotspot"
 	echo_yellow "cerah: mengatur Kecerahan layar"
 	echo_yellow "edit: membuka text editor"
