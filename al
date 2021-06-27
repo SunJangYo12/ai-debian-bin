@@ -257,12 +257,9 @@ function apk_build()
 
         if [ -d $anama/jni ]; then
             cd $anama
-            files=( lib/* )
-            for file in "${files[@]}"; do
-                pjni="`printf $file`"
-                ejni="`ls $file`"
-                ejni=$pjni/$ejni
-                aapt add bin/out.apk $ejni
+            find lib -type f -print0 | while IFS= read -r -d $'\0' file; do
+                aapt add bin/out.apk "$file"
+                #echo "$file"
             done
             cd -
         fi
@@ -760,10 +757,11 @@ function apk_index() {
     echo_pink "2.  Empeded android app decompile/compile"
     echo_pink "3.  Sign manually android app"
     echo_pink "4.  View class to java code"
-    echo_pink "5.  Backup android app"
-    echo_pink "6.  Adb touch"
-    echo_pink "7.  Apk class to dex"
-    echo_pink "8.  Android metasploit tutor"
+    echo_pink "5.  Java to Smali code convert"
+    echo_pink "6.  Backup android app"
+    echo_pink "7.  Adb touch"
+    echo_pink "8.  Apk class to dex"
+    echo_pink "9.  Android metasploit tutor"
 
     read -rp "> " apk_option
     case ${apk_option} in
@@ -848,6 +846,36 @@ function apk_index() {
         fi
     ;;
     5)
+        if ! hash "java" 2> /dev/null; then
+            echo
+            echo -ne "${red_color}         Error java not installed ${normal_color}"
+            echo
+            exit
+        else
+            ls
+            read -p "Masukan nama java tanpa *.java: " jsnama
+            
+            echo_green "[+] Compiling..."
+            javac "$jsnama".java & spinner
+            
+            echo_yellow "[+] Convert class to jar..."
+            jar cf "$jsnama".jar "$jsnama".class & spinner
+
+            echo_pink "[+] Convert jar to apk..."
+            bash $allib/build-tools/dx --dex --output="$jsnama".apk "$jsnama".jar & spinner
+
+            echo_blue "[+] apktool decompile apk..."
+            apktool d -f "$jsnama".apk & spinner
+            echo_red "[+] Cleaning..."
+            rm "$jsnama".class 
+            rm "$jsnama".jar 
+            rm "$jsnama".apk
+            echo "Complete" 
+
+
+        fi
+    ;;
+    6)
         lagi="y"
         while [ $lagi = "y" ]; do
             read -p "[+]  Masukan nama paket ENTER semua: " apknb
@@ -870,7 +898,7 @@ function apk_index() {
             read -p "[+]  Lagi ? y/n : " lagi
         done
     ;;
-    6)
+    7)
         while [ true ]; do
             echo -n "."
             # home
@@ -883,7 +911,7 @@ function apk_index() {
             sleep 1
         done
     ;;
-    7)
+    8)
         if ! hash "java" 2> /dev/null; then
             echo
             echo -ne "${red_color}         Error java not installed ${normal_color}"
@@ -893,7 +921,7 @@ function apk_index() {
             apk_classToDex
         fi
     ;;
-    8)
+    9)
         metas_android
     ;;
     *)
@@ -920,7 +948,7 @@ elif [ "$com" = "edit" ]; then
     cd $allib/sublime/62bit
     ./sublime_text 2>/dev/null &
 elif [ "$com" = "3d" ]; then
-    cd $allib/blender-2.75a-linux-glibc211-i686/
+    cd $allib/blender-2.60a-linux-glibc27-x86_64/
     ./blender 2>/dev/null &
 elif [ "$com" = "wifi" ]; then
     wifi
@@ -934,12 +962,21 @@ elif [ "$com" = "wifi_hack" ]; then
 elif [ "$com" = "install" ]; then
     install_data
 elif [ "$com" = "screen" ]; then
-    scrot ~/screen.jpeg
+    read -p "screenshoot/off/on? scr/off/on: " scrc
+    if [ "$scrc" = "scr" ]; then
+       scrot ~/screen.jpeg
+    elif [ "$scrc" = "off" ]; then
+       xset -display :0.0 dpms force off
+    elif [ "$scrc" = "on" ]; then
+       xset -display :0.0 dpms force on
+    fi
 elif [[ "$com" = "snap" ]]; then
     read -p "service disable? y/n: " snapp
     if [ "$snapp" = "y" ]; then
         sudo systemctl stop snapd.service
         sudo systemctl disable snapd.service
+        #sudo systemctl reenable snapd.service
+        #sudo systemctl start snapd.service
     fi
 elif [ "$com" = "seven-square" ]; then
     cd $allib/build-tools
