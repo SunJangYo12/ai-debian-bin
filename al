@@ -934,21 +934,12 @@ elif [ "$com" = "wifi_hack" ]; then
 elif [ "$com" = "install" ]; then
     install_data
 elif [ "$com" = "screen" ]; then
-    read -p "screenshoot/off/on? scr/off/on: " scrc
-    if [ "$scrc" = "scr" ]; then
-       scrot ~/screen.jpeg
-    elif [ "$scrc" = "off" ]; then
-       xset -display :0.0 dpms force off
-    elif [ "$scrc" = "on" ]; then
-       xset -display :0.0 dpms force on
-    fi
+    scrot ~/screen.jpeg
 elif [[ "$com" = "snap" ]]; then
     read -p "service disable? y/n: " snapp
     if [ "$snapp" = "y" ]; then
         sudo systemctl stop snapd.service
         sudo systemctl disable snapd.service
-        #sudo systemctl reenable snapd.service
-        #sudo systemctl start snapd.service
     fi
 elif [ "$com" = "seven-square" ]; then
     cd $allib/build-tools
